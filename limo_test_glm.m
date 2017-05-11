@@ -195,4 +195,6 @@ else
     index = index + 1; disp('2 ways ANCOVA failed')
 end
 
+cd ..
+delete('tmp')
 
