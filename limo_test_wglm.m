@@ -61,7 +61,17 @@ plot(0.5,mean(mp(1,:)),'ko','LineWidth',3)
 plot(0.5,mean(mp(3,:)),'ko','LineWidth',3)
 title(sprintf('ANOVA mean p-values WLS vs IRLS \n WLS error:%g, IRLS error %g',mean(mean(erwls,2)),mean(mean(erirls,2))))
 
+% check confidence intervals
+[~,ci_ols]  = binofit(sum(erols(:)),100*nMC);
+[~,ci_wls]  = binofit(sum(erwls(:)),100*nMC);
+[~,ci_irls] = binofit(sum(erirls(:)),100*nMC);
+fprintf('ANOVA error rates OLS [%g %g] WLS [%g %g] IRLS [%g %g]\n',...
+    ci_ols(1),ci_ols(2),ci_wls(1),ci_wls(2),ci_irls(1),ci_irls(2))
+
+
 %% 1-way ANCOVA
+
+% covariate place holder
 pols2   = NaN(100,nMC); 
 pwls2   = NaN(100,nMC);
 pirls2  = NaN(100,nMC);
@@ -122,6 +132,13 @@ plot(0.5,mean(mp(1,:)),'ko','LineWidth',3)
 plot(0.5,mean(mp(3,:)),'ko','LineWidth',3)
 title(sprintf('ANCOVA mean p-values WLS vs IRLS \n WLS error:%g, IRLS error %g',mean(mean(erwls,2)),mean(mean(erirls,2))))
 
+% check confidence intervals
+[~,ci_ols]  = binofit(sum(erols(:)),100*nMC);
+[~,ci_wls]  = binofit(sum(erwls(:)),100*nMC);
+[~,ci_irls] = binofit(sum(erirls(:)),100*nMC);
+fprintf('ANCOVA condition error rates OLS [%g %g] WLS [%g %g] IRLS [%g %g]\n',...
+    ci_ols(1),ci_ols(2),ci_wls(1),ci_wls(2),ci_irls(1),ci_irls(2))
+
 mp = [mean(pols2);mean(pwls2);mean(pirls2)]; % average frames
 subplot(2,3,4)
 scatter(mp(1,:),mp(2,:),50,[0 0 1])
@@ -153,3 +170,9 @@ grid on; box on
 plot(0.5,mean(mp(1,:)),'ko','LineWidth',3)
 plot(0.5,mean(mp(3,:)),'ko','LineWidth',3)
 title(sprintf('Reg mean p-values WLS vs IRLS \n WLS error:%g, IRLS error %g',mean(mean(erwls2,2)),mean(mean(erirls2,2))))
+
+[~,ci_ols]  = binofit(sum(erols2(:)),100*nMC);
+[~,ci_wls]  = binofit(sum(erwls2(:)),100*nMC);
+[~,ci_irls] = binofit(sum(erirls2(:)),100*nMC);
+fprintf('ANCOVA covariate error rates OLS [%g %g] WLS [%g %g] IRLS [%g %g]\n',...
+    ci_ols(1),ci_ols(2),ci_wls(1),ci_wls(2),ci_irls(1),ci_irls(2))
