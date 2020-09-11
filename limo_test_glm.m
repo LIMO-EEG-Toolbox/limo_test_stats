@@ -28,6 +28,26 @@ index = 1; errorcatch = {};
 mkdir('tmp'); cd('tmp'); 
 directory = pwd;
 
+%% 0 groups - just the mean 
+% (useful for power analyes when using WLS)
+Y        = NaN(1,1,10);
+Y(1,1,:) = [5,6,8,7,9,3,2,1,5,6]';
+Cat      = [];
+Cont     = [];
+[X,nb_conditions,nb_interactions,nb_continuous] = ...
+    limo_design_matrix(Y,Cat,Cont,directory,1,0,1);
+title('GLM with just the mean')
+model = limo_glm(squeeze(Y),X,nb_conditions,nb_interactions,nb_continuous,'OLS','Time',[],[]);
+if single(model.betas) == single(mean(Y))
+    disp('----------------------------')    
+    disp('GLM no regressors validated ')
+    disp('----------------------------')    
+else
+    errorcatch{index} = 'GLM just the mean failed';
+    index = index + 1; disp('GLM with just the mean failed')
+end
+
+
 %% 2 groups
 Y        = NaN(1,1,10);
 Y(1,1,:) = [5,6,8,7,9,3,2,1,5,6]';
@@ -315,4 +335,8 @@ end
 
 cd ..
 rmdir('tmp','s')
-if isempty(errorcatch); disp('SUCCESS all tests passed !!'); end
+if isempty(errorcatch)
+    disp('SUCCESS all tests passed !!'); 
+else
+    cellfun(@(x) fprintf('%s\n',x), errorcatch);
+end
