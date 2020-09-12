@@ -5,12 +5,14 @@ function [avg_err,ci_err] = limo_test_glmboot(varargin)
 % is a consistency in space/frequency/time in the effect observed,
 % typically due to non stationarity
 %
-% FORMAT [avg_err,ci_err] = limo_test_glmboot(H0,'alphavalue',0.05,'figure','on')
+% FORMAT [avg_err,ci_err] = limo_test_glmboot(H0,'step_size',100,'alphavalue',0.05,'figure','on')
 % 
 % INPUTS H0 is a cell array of H0 folders (1 or many)
+%        'alphavalue' is the nominal level to test
+%        'step_size' the distance between resamples to look at convergence rate
 %        'figure' gives the option to check the space/frequency/time of
-%        effects - note if multiple H0 are given, data must all be of 
-%        the same dimension
+%                 effects - note if multiple H0 are given, data must all be of 
+%                 the same dimension
 %
 % OUTPUTS avg_err is the average error rate over the resamples 
 %         ci_err is the binomial 95% confidence interal
@@ -20,16 +22,21 @@ function [avg_err,ci_err] = limo_test_glmboot(varargin)
 % defaults
 alphavalue  = 0.05;
 figurevalue = 'on';
+stepvalue   = 200;
 
 if ~iscell(varargin{1})
     error('cellarray expected as input')
 else
     H0 = varargin{1};
     for key = 2:nargin
-        if contains(varargin{key},'alpha','IgnoreCase',true)
-            alphavalue = varargin{key+1};
-        elseif contains(varargin{key},'figure','IgnoreCase',true)
-            figurevalue = varargin{key+1};
+        if ischar(varargin{key})
+            if contains(varargin{key},'alpha','IgnoreCase',true)
+                alphavalue = varargin{key+1};
+            elseif contains(varargin{key},'figure','IgnoreCase',true)
+                figurevalue = varargin{key+1};
+            elseif contains(varargin{key},'step','IgnoreCase',true)
+                stepvalue = varargin{key+1};
+            end
         end
     end
 end
@@ -52,7 +59,7 @@ for folder = 1:length(H0)
                 if ndims(data) == 4
                     data(isnan(data(:,1,1,1)),:,:,:) = [];
                     Ntests         = prod(size(data,[1 2]));
-                    samp           = size(data,4):-200:200;
+                    samp           = size(data,4):-stepvalue:200;
                     err{folder,fileindex}  = sum(squeeze(data(:,:,end,:)) < alphavalue,3); % number of errors
                     for s = length(samp):-1:1
                         tmp  = sum(squeeze(data(:,:,end,1:samp(s))) < alphavalue,3);
@@ -61,7 +68,7 @@ for folder = 1:length(H0)
                 elseif ndims(data) == 5
                     data(isnan(data(:,1,1,1,1)),:,:,:,:) = [];
                     Ntests         = prod(size(data,[1 2 3]));
-                    samp           = size(data,5):-200:200;
+                    samp           = size(data,5):-stepvalue:200;
                     err{folder,fileindex}  = sum(squeeze(data(:,:,:,end,:)) < alphavalue,3); % number of errors
                     for s = length(samp):-1:1
                         tmp  = sum(squeeze(data(:,:,:,end,1:samp(s))) < alphavalue,4);
@@ -73,7 +80,7 @@ for folder = 1:length(H0)
                 
                 if folder == 1
                     content(c).name(strfind(content(c).name,'_')) = ' ';
-                    filename{fileindex} = content(c).name; % assuming each H0 is the same
+                    filename{fileindex} = content(c).name; %#ok<AGROW> % assuming each H0 is the same
                 end
                 fileindex = fileindex+1;
             end
