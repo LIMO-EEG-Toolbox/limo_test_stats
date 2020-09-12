@@ -97,6 +97,7 @@ if strcmpi(figurevalue,'on')
             imagesc(squeeze(mean(tmp,2)))
         end
         title(sprintf('%s',filename{c}(1:end-4)))
+        ylabel('type 1 error')
     end
     
     figure('Name','type 1 error')
@@ -108,24 +109,29 @@ if strcmpi(figurevalue,'on')
             high = ci_err{folder,c}(2,end) - avg_err{folder,c}(end);
             errorbar(folder,avg_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
         end
-        plot(0:size(err,1),repmat(alphavalue,1,size(err,1)+1),'k--')
+        plot(0:size(err,1),repmat(alphavalue,1,size(err,1)+1),'k')
+        [~,ci]=binofit(samp(end)*Ntests*0.05,samp(end)*Ntests);
+        plot(0:size(err,1),repmat(ci(1),1,size(err,1)+1),'k--')
+        plot(0:size(err,1),repmat(ci(2),size(err,1)+1),'k--')
         title(sprintf('%s',filename{c}(1:end-4))); grid on
     end
-     subplot(size(err,2)+1,1,size(err,2))
-     AVG = zeros(1,length(avg_err{folder,c}));
-     LOW = AVG ; HIGH = AVG;
-     for c=1:size(err,2)
-         for folder = 1:size(err,1)
-             AVG = AVG + avg_err{folder,c};
-             LOW = LOW + ci_err{folder,c}(1,:);
-             HIGH = HIGH + ci_err{folder,c}(2,:);             
-         end
-     end
-     AVG  = AVG ./ (size(err,1)*fileindex-1);
-     LOW  = LOW ./ (size(err,1)*fileindex-1);
-     HIGH = HIGH ./ (size(err,1)*fileindex-1);
-     plot(samp,AVG,'LineWidth',2);
-     hold on; plot(samp,LOW,'k--','LineWidth',1);
-     plot(samp,HIGH,'k--','LineWidth',1);
-     grid on; title('average convergence rate')
+    
+    subplot(size(err,2)+1,1,size(err,2)+1)
+    AVG = zeros(1,length(avg_err{folder,c}));
+    LOW = AVG ; HIGH = AVG;
+    for c=1:size(err,2)
+        for folder = 1:size(err,1)
+            AVG = AVG + avg_err{folder,c};
+            LOW = LOW + ci_err{folder,c}(1,:);
+            HIGH = HIGH + ci_err{folder,c}(2,:);
+        end
+    end
+    AVG  = AVG ./ (size(err,1)*size(err,2));
+    LOW  = LOW ./ (size(err,1)*size(err,2));
+    HIGH = HIGH ./ (size(err,1)*size(err,2));
+    plot(samp,AVG,'LineWidth',2);
+    hold on; plot(samp,LOW,'k--','LineWidth',1);
+    plot(samp,HIGH,'k--','LineWidth',1);
+    grid on; title('average convergence rate')
+    ylabel('type 1 error')
 end
