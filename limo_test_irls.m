@@ -1,7 +1,8 @@
 %% IRLS validation
 % ------------------
 % this script imnplement a series of simple Monte Carlo simulation testing
-% that the bootstrap procedures implemented in LIMO EEG gives the right
+% (1) that the IRLS weights data as it should (compare with robustfit)
+% (2) that the bootstrap procedures implemented in LIMO EEG gives the right
 % type one error rate
 
 %% Simple regression
@@ -17,8 +18,8 @@ for MC = 1:10
     Y(1,:) = r(:,1);
     Y(2,:) = r(:,1);
     X = [r(:,2) ones(20,1)];
-    nb_conditions = 0;
-    nb_continuous = 1;
+    nb_conditions   = 0;
+    nb_continuous   = 1;
     nb_interactions = 0;
     
     % if we use OLS
@@ -30,20 +31,20 @@ for MC = 1:10
     % if we use OLS and bootstrap
     % --------------------------
     boot_table = randi(20,20,599);
-    model = limo_glm1_boot(Y',X,nb_conditions,nb_interactions,nb_continuous,1,'OLS',boot_table);
-    for b=1:599; bootF(b) =  model.continuous.F{b}(1); end
+    model = limo_glm_boot(Y',X,nb_conditions,nb_interactions,nb_continuous,1,'OLS',boot_table);
+    parfor b=1:599; bootF(b) =  model.continuous.F{b}(1); end
     p_value_OLS_boot(MC) = 1 - (sum(F_obs>bootF) / 599);
     
     % if we use IRLS
     % ---------------
-    model = limo_glm1(Y',X,nb_conditions,nb_interactions,nb_continuous,'IRLS');
+    model = limo_glm(Y',X,nb_conditions,nb_interactions,nb_continuous,'IRLS');
     F_obs =  model.continuous.F(1);
     p_value_IRLS(MC) = model.continuous.p(1);
     
     % if we use IRLS and bootstrap
     % ----------------------------
     weights = model.W';
-    model = limo_glm1_boot(Y',X,nb_conditions,nb_interactions,nb_continuous,1,'IRLS',boot_table);
+    model = limo_glm_boot(Y',X,nb_conditions,nb_interactions,nb_continuous,1,'IRLS',boot_table);
     for b=1:599; bootF(b) =  model.continuous.F{b}(1); end
     p_value_IRLS_boot(MC) = 1 - (sum(F_obs>bootF) / 599);
 end
