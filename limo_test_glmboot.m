@@ -50,7 +50,7 @@ for folder = 1:length(H0)
         fprintf('%s is empty\n',H0{folder})
     else
         for c=1:size(content,1)
-            fprintf('loading %s \n',H0{folder})
+            % fprintf('loading %s \n',H0{folder})
             if ~contains(content(c).name,'Betas') && ~contains(content(c).name,'tfce') ...
                     && ~contains(content(c).name,'R2')
                 data = load(fullfile(content(c).folder,content(c).name));
@@ -95,7 +95,9 @@ if strcmpi(figurevalue,'on')
     for c=1:size(err,2)
         tmp = err{1,c};
         for folder = 2:size(err,1)
-            tmp = tmp + err{folder,c};
+            if ~isempty(err{folder,c})
+                tmp = tmp + err{folder,c};
+            end
         end
         nexttile(t); 
         if ndims(tmp) ==2 %#ok<ISMAT>
@@ -112,9 +114,11 @@ if strcmpi(figurevalue,'on')
     for c=1:size(err,2)
         subplot(size(err,2)+1,1,c); hold on
         for folder = size(err,1):-1:1
-            low = avg_err{folder,c}(end) - ci_err{folder,c}(1,end);
-            high = ci_err{folder,c}(2,end) - avg_err{folder,c}(end);
-            errorbar(folder,avg_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
+            if ~isempty(err{folder,c})
+                low = avg_err{folder,c}(end) - ci_err{folder,c}(1,end);
+                high = ci_err{folder,c}(2,end) - avg_err{folder,c}(end);
+                errorbar(folder,avg_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
+            end
         end
         plot(0:size(err,1),repmat(alphavalue,1,size(err,1)+1),'k')
         [~,ci]=binofit(samp(end)*Ntests*0.05,samp(end)*Ntests);
@@ -128,9 +132,11 @@ if strcmpi(figurevalue,'on')
     LOW = AVG ; HIGH = AVG;
     for c=1:size(err,2)
         for folder = 1:size(err,1)
-            AVG = AVG + avg_err{folder,c};
-            LOW = LOW + ci_err{folder,c}(1,:);
-            HIGH = HIGH + ci_err{folder,c}(2,:);
+            if ~isempty(err{folder,c})
+                AVG = AVG + avg_err{folder,c};
+                LOW = LOW + ci_err{folder,c}(1,:);
+                HIGH = HIGH + ci_err{folder,c}(2,:);
+            end
         end
     end
     AVG  = AVG ./ (size(err,1)*size(err,2));
