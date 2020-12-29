@@ -333,8 +333,7 @@ else
     index = index + 1; disp('2 ways ANCOVA failed')
 end
 
-cd ..
-rmdir('tmp','s')
+cd ..; try rmdir('tmp','s'); end
 if isempty(errorcatch)
     disp('SUCCESS all tests passed !!'); 
 else
