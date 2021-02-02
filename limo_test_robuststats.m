@@ -91,8 +91,16 @@ clear cholesterol Data1 Data2 diff se CI p df
 
 % robust regression -- handled for now via limo_glm using IRLS -- there is
 % a limo_lowess.m hidden function ; we should really get this done
-
 % robust N-ways ANOVA / N-ways ANCOVA - handled for via limo_glm using IRLS
+test = limo_test_irls;
+index = [min(find(test(:,1) <= 0.0001))+1 ...
+    min(find(test(:,2) <= 0.0001))+1 ...
+    min(find(test(:,3) <= 0.0001))+1];
+precision = max(test(index));
+match = min(sample_sizes(sum(test <= precision,2) == 3));
+fprintf('model fit limo_irls = Matlab robustfit from N=%g\n',match)
+
+
 
 % robust repeated measure ANOVA - limo_robust_rep_anova.m still working on
 % it 
