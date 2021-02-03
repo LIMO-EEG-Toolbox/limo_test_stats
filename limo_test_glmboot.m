@@ -235,18 +235,33 @@ end
 
 % make figure
 if strcmpi(figurevalue,'on')
-    if size(err,2) == 1
-        figure('Name','Error bias and rate');
+    for c=1:size(err,2) % one figure per H0 file
+        figure('Name',sprintf('Error bias and rate %s',content(2+c).name(1:end-4)));
         for type = 1:3
             if type == 1
                 subplot(3,3,1);
-                tmp = err{1,1};
+                tmp = err{1,c};
+                for folder = 2:size(err,1)
+                    if ~isempty(err{folder,c})
+                        tmp = tmp + err{folder,c};
+                    end
+                end
             elseif type == 2
                 subplot(3,3,2);
-                tmp = max_loc{1,1};
+                tmp = max_loc{1,c};
+                for folder = 2:size(err,1)
+                    if ~isempty(max_loc{folder,c})
+                        tmp = tmp + max_loc{folder,c};
+                    end
+                end
             else
                 subplot(3,3,3);
-                tmp = cluster_loc{1,1};
+                tmp = cluster_loc{1,c};
+                for folder = 2:size(err,1)
+                    if ~isempty(cluster_loc{folder,c})
+                        tmp = tmp + cluster_loc{folder,c};
+                    end
+                end
             end
             
             if ndims(tmp) ==2 %#ok<ISMAT>
@@ -269,22 +284,22 @@ if strcmpi(figurevalue,'on')
         for type = 1:3
             subplot(3,3,3+type); hold on
             for folder = size(err,1):-1:1 % subjects
-                if ~isempty(err{folder,1})
+                if ~isempty(err{folder,c})
                     if type == 1
-                        low  = avg_err{folder,1}(end)  - ci_err{folder,1}(1,end);
-                        high = ci_err{folder,1}(2,end) - avg_err{folder,1}(end);
-                        errorbar(folder,avg_err{folder,1}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
-                        fprintf('subject''s error [%g %g]\n',ci_err{folder,1}(1,end),ci_err{folder,1}(2,end))
+                        low  = avg_err{folder,c}(end)  - ci_err{folder,c}(1,end);
+                        high = ci_err{folder,c}(2,end) - avg_err{folder,c}(end);
+                        errorbar(folder,avg_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
+                        fprintf('subject''s error [%g %g]\n',ci_err{folder,c}(1,end),ci_err{folder,c}(2,end))
                     elseif type == 2
-                        low  = max_err{folder,1}(end)   - maxci_err{folder,1}(1,end);
-                        high = maxci_err{folder,1}(2,end) - max_err{folder,1}(end);
-                        errorbar(folder,max_err{folder,1}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
-                        fprintf('subject''s error [%g %g]\n',maxci_err{folder,1}(1,end),maxci_err{folder,1}(2,end))
+                        low  = max_err{folder,c}(end)   - maxci_err{folder,c}(1,end);
+                        high = maxci_err{folder,c}(2,end) - max_err{folder,c}(end);
+                        errorbar(folder,max_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
+                        fprintf('subject''s error [%g %g]\n',maxci_err{folder,c}(1,end),maxci_err{folder,c}(2,end))
                     else
-                        low  = maxc_err{folder,1}(end)     - maxcic_err{folder,1}(1,end);
-                        high = maxcic_err{folder,1}(2,end) - maxc_err{folder,1}(end);
-                        errorbar(folder,maxc_err{folder,1}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
-                        fprintf('subject''s error [%g %g]\n',maxcic_err{folder,1}(1,end),maxcic_err{folder,1}(2,end))
+                        low  = maxc_err{folder,c}(end)     - maxcic_err{folder,c}(1,end);
+                        high = maxcic_err{folder,c}(2,end) - maxc_err{folder,c}(end);
+                        errorbar(folder,maxc_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
+                        fprintf('subject''s error [%g %g]\n',maxcic_err{folder,c}(1,end),maxcic_err{folder,c}(2,end))
                     end
                 end
             end
@@ -306,20 +321,20 @@ if strcmpi(figurevalue,'on')
             LOW = zeros(1,length(avg_err{folder,1}));
             HIGH = LOW;
             for folder = size(err,1):-1:1
-                if ~isempty(err{folder,1})
+                if ~isempty(err{folder,c})
                     if type == 1
-                        plot(samp,avg_err{folder,1},'--','LineWidth',1);hold on;
-                        LOW  = LOW  + ci_err{folder,1}(1,:);
-                        HIGH = HIGH + ci_err{folder,1}(2,:);
+                        plot(samp,avg_err{folder,c},'--','LineWidth',1);hold on;
+                        LOW  = LOW  + ci_err{folder,c}(1,:);
+                        HIGH = HIGH + ci_err{folder,c}(2,:);
                         ylabel('type 1 error')
                     elseif type == 2
-                        plot(samp,max_err{folder,1},'--','LineWidth',1);hold on;
-                        LOW  = LOW  + maxci_err{folder,1}(1,:);
-                        HIGH = HIGH + maxci_err{folder,1}(2,:);
+                        plot(samp,max_err{folder,c},'--','LineWidth',1);hold on;
+                        LOW  = LOW  + maxci_err{folder,c}(1,:);
+                        HIGH = HIGH + maxci_err{folder,c}(2,:);
                     else
-                        plot(samp,maxc_err{folder,1},'--','LineWidth',1);hold on;
-                        LOW  = LOW + maxcic_err{folder,1}(1,:);
-                        HIGH = HIGH + maxcic_err{folder,1}(2,:);
+                        plot(samp,maxc_err{folder,c},'--','LineWidth',1);hold on;
+                        LOW  = LOW + maxcic_err{folder,c}(1,:);
+                        HIGH = HIGH + maxcic_err{folder,c}(2,:);
                     end
                 end
             end
@@ -327,67 +342,13 @@ if strcmpi(figurevalue,'on')
             HIGH = HIGH ./ (size(err,1)*size(err,2));
             plot(samp,LOW,'k','LineWidth',2);
             plot(samp,HIGH,'k','LineWidth',2);
-            grid on; title('average convergence rate')
+            grid on;
+            if type == 1
+                title('Sample size tested')
+            else
+                title('Convergence rate per null sample size')
+            end
             fprintf('average error [%g %g]\n',LOW(end),HIGH(end))
         end
-        
-    else % do multiple figures
-        figure('Name','cell-wise error density');
-        t = tiledlayout('flow');
-        for c=1:size(err,2)
-            tmp = err{1,c};
-            for folder = 2:size(err,1)
-                if ~isempty(err{folder,c})
-                    tmp = tmp + err{folder,c};
-                end
-            end
-            nexttile(t);
-            if ndims(tmp) ==2 %#ok<ISMAT>
-                imagesc(tmp)
-            else
-                imagesc(squeeze(mean(tmp,2)))
-            end
-            title(sprintf('%s',filename{c}(1:end-4)))
-            ylabel('type 1 error')
-        end
-        
-        figure('Name','type 1 error')
-        cc = limo_color_images(size(err,1));
-        for c=1:size(err,2)
-            subplot(size(err,2)+1,1,c); hold on
-            for folder = size(err,1):-1:1
-                if ~isempty(err{folder,c})
-                    low = avg_err{folder,c}(end) - ci_err{folder,c}(1,end);
-                    high = ci_err{folder,c}(2,end) - avg_err{folder,c}(end);
-                    errorbar(folder,avg_err{folder,c}(end),low,high,'LineWidth',2,'Color',cc(folder,:))
-                end
-            end
-            plot(0:size(err,1),repmat(alphavalue,1,size(err,1)+1),'k')
-            [~,ci]=binofit(samp(end)*Ntests*0.05,samp(end)*Ntests);
-            plot(0:size(err,1),repmat(ci(1),1,size(err,1)+1),'k--')
-            plot(0:size(err,1),repmat(ci(2),size(err,1)+1),'k--')
-            title(sprintf('%s',filename{c}(1:end-4))); grid on
-        end
-        
-        subplot(size(err,2)+1,1,size(err,2)+1)
-        AVG = zeros(1,length(avg_err{folder,c}));
-        LOW = AVG ; HIGH = AVG;
-        for c=1:size(err,2)
-            for folder = 1:size(err,1)
-                if ~isempty(err{folder,c})
-                    AVG = AVG + avg_err{folder,c};
-                    LOW = LOW + ci_err{folder,c}(1,:);
-                    HIGH = HIGH + ci_err{folder,c}(2,:);
-                end
-            end
-        end
-        AVG  = AVG ./ (size(err,1)*size(err,2));
-        LOW  = LOW ./ (size(err,1)*size(err,2));
-        HIGH = HIGH ./ (size(err,1)*size(err,2));
-        plot(samp,AVG,'LineWidth',2);
-        hold on; plot(samp,LOW,'k--','LineWidth',1);
-        plot(samp,HIGH,'k--','LineWidth',1);
-        grid on; title('average convergence rate')
-        ylabel('type 1 error')
     end
 end
