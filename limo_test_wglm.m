@@ -184,7 +184,7 @@ plot([0.4 0.6],[0.4 0.6],'r','LineWidth',2);
 grid on; box on
 plot(median(mp(:)),0.5,'ko','LineWidth',3)
 plot(0.5,median(mp(:)),'ko','LineWidth',3)
-title(sprintf('%s median p-values OLS vs WLS \n OLS error:%g, WLS error %g',test,mean(median(erols,2)),mean(median(erwls,2))))
+title(sprintf('%s median p-values OLS vs WLS \n OLS error:%g, WLS error %g',test,median(erols(:)),median(erwls(:))))
 subplot(1,3,2)
 scatter(mp(1,:),mp(3,:),50,[0 0 1])
 xlabel('OLS'); ylabel('IRLS')
@@ -194,7 +194,7 @@ plot([0.4 0.6],[0.4 0.6],'r','LineWidth',2);
 grid on; box on
 plot(median(mp(:)),0.5,'ko','LineWidth',3)
 plot(0.5,median(mp(:)),'ko','LineWidth',3)
-title(sprintf('%s median p-values OLS vs IRLS \n OLS error:%g, IRLS error %g',test,mean(median(erols,2)),mean(median(erirls,2))))
+title(sprintf('%s median p-values OLS vs IRLS \n OLS error:%g, IRLS error %g',test,median(erols(:)),median(erirls(:))))
 subplot(1,3,3)
 scatter(mp(2,:),mp(3,:),50,[0 0 1])
 xlabel('WLS'); ylabel('IRLS')
@@ -204,7 +204,7 @@ plot([0.4 0.6],[0.4 0.6],'r','LineWidth',2);
 grid on; box on
 plot(median(mp(:)),0.5,'ko','LineWidth',3)
 plot(0.5,median(mp(:)),'ko','LineWidth',3)
-title(sprintf('%s median p-values WLS vs IRLS \n WLS error:%g, IRLS error %g',test,mean(median(erwls,2)),mean(median(erirls,2))))
+title(sprintf('%s median p-values WLS vs IRLS \n WLS error:%g, IRLS error %g',test,median(erwls(:)),median(erirls(:))))
 drawnow
 
 end
