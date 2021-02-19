@@ -1,12 +1,6 @@
-function limotest = limo_test_integration(studyfullname)
+%% limo_test_integration
 
 % Integration test for 1st level and 2nd level analyses
-%
-% FORMAT limotest = limo_test_integration(studyfullname)
-%
-% INPUT studyfullname full name (with path) of a study
-%       e.g. studyfullname = 'F:\WakemanHenson_Faces\eeg\derivatives\Face_detection.study'
-%
 % this assumes preprocessed data, single trials erp and STUDY present from the curated
 % Wakeman and Henson dataset https://openneuro.org/datasets/ds002718/versions/1.0.2
 % using preprocessing here https://github.com/LIMO-EEG-Toolbox/limo_meeg/blob/master/resources/from_bids2stats.m
@@ -30,6 +24,10 @@ function limotest = limo_test_integration(studyfullname)
 %          basic stats
 %          plotting
 
+% INPUT studyfullname full name (with path) of a study
+studyfullname = 'F:\WakemanHenson_Faces\eeg\derivatives\Face_detection.study';
+
+tic
 if exist(studyfullname,'file')
     [root,std_name,ext]=fileparts(studyfullname);
     cd(root); EEG = eeglab;
@@ -40,7 +38,6 @@ if exist(studyfullname,'file')
 else
     error('study file nout found')
 end
-
 
 %% test std_limo and 1st level GLM
 
@@ -58,8 +55,8 @@ try
         rmdir([limo_rootfiles filesep 'limo_batch_report'],'s')
     end
     for sub = 1:length(STUDY.subject)
-        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channel_OLS']),'dir')
-            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channel_OLS']),'s')
+        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'dir')
+            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'s')
         end
     end
     
@@ -83,8 +80,8 @@ try
     
     % cleanup previous version
     for sub = 1:length(STUDY.subject)
-        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channel_WLS']),'dir')
-            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channel_WLS']),'s')
+        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'dir')
+            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'s')
         end
     end
     
@@ -124,13 +121,14 @@ try
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
         'LIMOfiles',Model2_files.Beta, 'analysis_type','1 channel/component only', 'Channel',channel_vector, ...
         'type','Channels','parameter',{[1  3 7]},'nboot',101,'tfce',1);
-    cd .. ; 
+    cd .. ;
     limotest{3} = 'one sample t-tests successful';
+    save('virtual_electrode','channel_vector')
 catch err
+    fprintf('%s\n',err.message)
     limotest{3} = sprintf('one sample t-tests failed \n%s',err.message);
 end
 
-save('virtual_electrode','channel_vector')
 
 % ---------------------------------------------------------------------
 % regression
@@ -162,6 +160,7 @@ try
    cd .. ;
     limotest{4} = 'regressions successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{4} = sprintf('regressions failed \n%s',err.message);
 end
 
@@ -196,6 +195,7 @@ try
     cd .. ;
     limotest{5} = 'paired t-test successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{5} = sprintf('paired t-test failed \n%s',err.message);
 end
 
@@ -224,6 +224,7 @@ try
     cd .. ;    
     limotest{6} = 'two samples t-test successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{6} = sprintf('two samples t-test failed \n%s',err.message);
 end
 
@@ -274,6 +275,7 @@ try
     cd .. ;    
     limotest{7} = '1-way ANOVA successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{7} = sprintf('1-way ANOVA failed \n%s',err.message);
 end
 
@@ -317,6 +319,7 @@ try
    cd .. ;
     limotest{8} = 'ANCOVA + contrast successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{8} = sprintf('1-ANCOVA + contrast failed \n%s',err.message);
 end
 
@@ -375,6 +378,7 @@ try
     cd ..
     limotest{9} = 'Repeated measures ANOVA + contrast successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{9} = sprintf('Repeated measures ANOVA + contrast failed \n%s',err.message);
 end
 
@@ -387,3 +391,4 @@ if all(contains(limotest,'successful'))
 else
     warning('test failure - files were not deleted from drive')
 end
+toc
