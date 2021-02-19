@@ -25,6 +25,7 @@
 %          plotting
 
 % INPUT studyfullname full name (with path) of a study
+clear variables
 studyfullname = 'F:\WakemanHenson_Faces\eeg\derivatives\Face_detection.study';
 
 tic
