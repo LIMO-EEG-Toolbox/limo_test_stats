@@ -132,7 +132,6 @@ catch err
     limotest{3} = sprintf('one sample t-tests failed \n%s',err.message);
 end
 
-
 % ---------------------------------------------------------------------
 % regression
 try
@@ -245,7 +244,8 @@ try
     mkdir('N-Ways ANOVA'); cd('N-Ways ANOVA')
     LIMOPath = limo_random_select('N-Ways ANOVA',STUDY.limo.chanloc,'LIMOfiles',data',...
         'analysis_type','Full scalp analysis', 'type','Channels','nboot',101,'tfce',1,'skip design check','yes');
-        
+    cd ..
+    
     % N-Ways ANOVA channel 50 with file list of con files
     clear data; index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
     for s=1:length(index); data{s} = cell2mat(Model1_files.con{index(s)}(1)); end
@@ -274,7 +274,7 @@ try
     LIMOPath = limo_random_select('N-Ways ANOVA',STUDY.limo.chanloc,...
         'LIMOfiles',Bfiles, 'analysis_type','1 channel/component only', ...
         'Channel',fullfile(root,['2nd_level_tests' filesep 'virtual_electrode.mat']), ...
-        'type','Channels','parameter',{},'nboot',101,'tfce',1,'skip design check','yes');    
+        'type','Channels','parameter',{[1;1;1]},'nboot',101,'tfce',1,'skip design check','yes');    
     cd .. ;    
     limotest{7} = '1-way ANOVA successful';
 catch err
