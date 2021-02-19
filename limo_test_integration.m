@@ -67,6 +67,7 @@ try
     clear confiles
     limotest{1} = 'categorical design + contrasts with OLS estimates successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{1} = sprintf('categorical design + contrasts with OLS estimates failed \n%s',err.message);
 end
 
@@ -92,6 +93,7 @@ try
     clear confiles
     limotest{2} = 'mixed design with WLS estimates + contrast successful';
 catch err
+    fprintf('%s\n',err.message)
     limotest{2} = sprintf('mixed design with WLS estimates + contrast failed \n%s',err.message);
 end
 
