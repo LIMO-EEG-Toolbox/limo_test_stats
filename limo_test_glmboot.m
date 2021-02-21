@@ -236,7 +236,8 @@ end
 % make figure
 if strcmpi(figurevalue,'on')
     for c=1:size(err,2) % one figure per H0 file
-        figure('Name',sprintf('Error bias and rate %s',content(2+c).name(1:end-4)));
+        current_name = sprintf('Error bias and rate %s',content(2+c).name(1:end-4));
+        figure('Name',current_name);
         for type = 1:3
             if type == 1
                 subplot(3,3,1);
@@ -350,5 +351,6 @@ if strcmpi(figurevalue,'on')
             end
             fprintf('average error [%g %g]\n',LOW(end),HIGH(end))
         end
+        saveas(gcf, current_name,'fig'); 
     end
 end
