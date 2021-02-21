@@ -104,6 +104,9 @@ LIMO.design.X                = X;
 LIMO.design.type_of_analysis = 'Mass-univariate';
 LIMO.design.method           = 'OLS';
 LIMO.model.model_df          = model.df; 
+LIMO.design.name             = 'ANOVA';
+LIMO.design.weights          = ones(1,15);
+LIMO.design.tfce             = 0;
 LIMO.contrast{1}.C           = limo_contrast_checking(LIMO.dir, LIMO.design.X, [1 -1]);
 LIMO.contrast{1}.V           = 'T';
 save LIMO LIMO
@@ -154,7 +157,7 @@ end
 
 %% %% 2 ways ANOVA with an interaction
 
- Y        = NaN(1,2,12);
+Y        = NaN(1,2,12);
 Y(1,1,:) = [5,6,8,7,9,3,2,1,5,6,4,5];
 Y(1,2,:) = [5,6,8,7,9,3,2,1,5,6,4,5];
 Cat      = [1 1 1 1 1 1 2 2 2 2 2 2 ; 1 2 3 1 2 3 1 2 3 1 2 3 ];
