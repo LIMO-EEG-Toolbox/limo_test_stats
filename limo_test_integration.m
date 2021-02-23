@@ -35,7 +35,10 @@ if exist(studyfullname,'file')
     %% load STUDY
     [STUDY, ALLEEG] = pop_loadstudy('filename', [std_name ext], 'filepath', root);
     % update to have 3 groups if not present
-    
+    [STUDY.datasetinfo(1:6).group ]= deal('1');
+    [STUDY.datasetinfo(7:13).group ]= deal('2');
+    [STUDY.datasetinfo(14:18).group ]= deal('3');
+
 else
     error('study file nout found')
 end
