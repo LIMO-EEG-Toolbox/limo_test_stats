@@ -181,6 +181,7 @@ save('virtual_electrode','channel_vector')
 % ---------------------------------------------------------------------
 % one sample t-test
 try
+    cd(root); cd('2nd_level_tests');
     % one sample t-test whole brain with a cell array of con files as input
     mkdir('one_sample'); cd('one_sample')
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
@@ -191,7 +192,7 @@ try
     % one sample t-test channel 50 file list of con files
     mkdir('one_sample50'); cd('one_sample50')
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
-        'LIMOfiles',[limo_rootfiles filesep 'con1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
+        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
     cd .. ;
     
@@ -210,6 +211,7 @@ end
 % ---------------------------------------------------------------------
 % regression
 try
+    cd(root); cd('2nd_level_tests');
     % regression (calls similar routines as one sample)
     % regression whole brain with an array of con files as input and a matrix as regressor
     mkdir('regression'); cd('regression')
@@ -222,7 +224,7 @@ try
     mkdir('regression50'); cd('regression50')
     randomreg = randn(length(Model2_files.con),1); save('reg.mat','randomreg');
     LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,'regressor_file',[pwd filesep 'reg.mat'],...
-        'LIMOfiles',[limo_rootfiles filesep 'con1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
+        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
    cd .. ;
     
@@ -234,7 +236,7 @@ try
         'analysis_type','1 channel/component only', 'type','Channels', ...
         'Channel',fullfile(root,['2nd_level_tests' filesep 'virtual_electrode.mat']), ...
         'zscore','yes','skip design check','yes','nboot',101,'tfce',1);
-   cd .. ;
+    cd .. ;
     limotest{4} = 'regressions successful';
 catch err
     fprintf('%s\n',err.message)
@@ -244,6 +246,7 @@ end
 % ---------------------------------------------------------------------
 % paired t-test
 try
+    cd(root); cd('2nd_level_tests');
     % paired t-test whole brain with a cell array of con files as input
     clear data
     for N=length(STUDY.subject):-1:1
@@ -257,8 +260,8 @@ try
     
     % paired t-test channel 50 with file list of con files
     mkdir('paired_t-test50'); cd('paired_t-test50')
-    datafiles = {[limo_rootfiles filesep 'con1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
-        [limo_rootfiles filesep 'con2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
+    datafiles = {[limo_rootfiles filesep 'con_1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
+        [limo_rootfiles filesep 'con_2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
     LIMOPath = limo_random_select('paired t-test',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
          'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
     cd .. ;
@@ -279,6 +282,7 @@ end
 % ---------------------------------------------------------------------
 % two samples t-test
 try
+    cd(root); cd('2nd_level_tests');
     % two-samples t-test whole brain with a cell array of con files as input
     mkdir('two-samples_t-test'); cd('two-samples_t-test')
     LIMOPath = limo_random_select('two-samples t-test',STUDY.limo.chanloc,...
@@ -308,6 +312,7 @@ end
 % ---------------------------------------------------------------------
 % 1-way ANOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % N-Ways ANOVA whole brain with a cell array of con files as input with empty cells 
     clear data
     index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
@@ -352,6 +357,7 @@ end
 % ---------------------------------------------------------------------
 % 1-way ANCOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % N-Ways ANCOVA whole brain with a cell array of con files as input with empty cells 
     clear data
     index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
@@ -396,6 +402,7 @@ end
 % ---------------------------------------------------------------------
 % Repeated measures ANOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % whole brain with Beta files as input
     mkdir('Rep-ANOVA'); cd('Rep-ANOVA')
     limo_random_select('Repeated Measures ANOVA',STUDY.limo.chanloc,'LIMOfiles',...
@@ -458,7 +465,7 @@ if all(contains(limotest,'successful'))
     disp('deleting all created files - test successful')
     rmdir('2nd_level_tests','s');
     rmdir(limo_rootfiles,'s')
-    limotest'
 else
     warning('test failure - files were not deleted from drive')
 end
+limotest'
