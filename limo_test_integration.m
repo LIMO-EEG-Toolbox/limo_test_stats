@@ -296,7 +296,7 @@ try
     cd .. ;
     
     % two-samples t-test virtual channel with file list of Betas
-    mkdir('two-samples_t-testOPT'); cd('two-samples_t-testOPT')
+    mkdir('two-samples_t-testOPT'); cd('two-samples_t-testOPT'); clear Bfiles
     Bfiles{1} = [limo_rootfiles filesep 'Beta_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'];
     Bfiles{2} = [limo_rootfiles filesep 'Beta_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'];
     LIMOPath = limo_random_select('two-samples t-test',STUDY.limo.chanloc,...
