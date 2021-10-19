@@ -5,7 +5,9 @@ function limo_test_glm
 % well estimated
 % 
 % providing known input parameters, the functions must returns known model parameters
-% the known values (ground truth) values were obtained using JASP
+% the known values (ground truth) values were obtained using JASP - these can be seen
+% in https://github.com/LIMO-EEG-Toolbox/limo_test_stats/tree/master/ground_truth_data
+% 
 %
 %   model = limo_glm(Y,X,nb_conditions,nb_interactions,nb_continuous, method,analysis type,n_freqs,n_times)
 %
@@ -22,7 +24,7 @@ function limo_test_glm
 %          --> df column 1 = df, column2 2 = dfe (same for all covariates)
 %
 % Cyril R. Pernet
-% University of Edinburgh
+% LIMO Team 2021
 % -----------------------
 index = 1; errorcatch = {};
 mkdir('tmp'); cd('tmp'); 
