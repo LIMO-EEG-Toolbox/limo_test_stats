@@ -183,8 +183,19 @@ end
 grid on; title('Weights correlations')
 
 % we can also check for the last 126 trials when is always under sampled
-MW = mean(W,4);  corr(squeeze(MO(1,:,:)))
-
+MW = mean(W,4);
+MO = mean(O,4);
+for o=5:-1:1
+     tmp = corr(squeeze(MW(o,:,:)));
+     CW(o,:) = tmp([2 3 6]);
+     tmp = corr(squeeze(MO(o,:,:)));
+     CO(o,:) = tmp([2 3 6]);
+end
+table(CO(:,1),CW(:,1),CO(:,2),CW(:,2),CO(:,3),CW(:,3),'VariableNames',...
+    {'Hamming 1000-500Hz','Pearson 1000-500Hz','Hamming 500-250Hz',...
+    'Pearson 500-250Hz','Hamming 1000-250Hz','Pearson 1000-250Hz'},...
+    'RowNames',{'10% outliers','20% outliers','30% outliers',...
+    '40% outliers','50% outliers'})
 
 
 
