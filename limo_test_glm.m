@@ -22,7 +22,7 @@ function limo_test_glm
 %          --> df column 1 = df, column2 2 = dfe (same for all covariates)
 %
 % Cyril R. Pernet
-% University of Edinburgh
+% LIMO Team 2021
 % -----------------------
 index = 1; errorcatch = {};
 mkdir('tmp'); cd('tmp'); 
