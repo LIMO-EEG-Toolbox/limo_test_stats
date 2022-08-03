@@ -91,28 +91,25 @@
 
 % INPUT studyfullname full name (with path) of a study
 studyfullname = 'F:\WakemanHenson_Faces\eeg\derivatives\Face_detection.study';
-
-tic
-if exist(studyfullname,'file')
-    [root,std_name,ext]=fileparts(studyfullname);
-    cd(root); EEG = eeglab;
-    %% load STUDY
-    [STUDY, ALLEEG] = pop_loadstudy('filename', [std_name ext], 'filepath', root);
-    % update to have 3 groups if not present
-    [STUDY.datasetinfo(1:6).group ]= deal('1');
-    [STUDY.datasetinfo(7:13).group ]= deal('2');
-    [STUDY.datasetinfo(14:18).group ]= deal('3');
-
-else
-    error('study file nout found')
+if ~exist(studyfullname,'file')
+    error('cannot find the study file')
 end
+
+[root,std_name,ext]=fileparts(studyfullname);
+cd(root); EEG = eeglab;
+%% load STUDY
+[STUDY, ALLEEG] = pop_loadstudy('filename', [std_name ext], 'filepath', root);
+% update to have 3 groups if not present
+[STUDY.datasetinfo(1:6).group ]= deal('1');
+[STUDY.datasetinfo(7:13).group ]= deal('2');
+[STUDY.datasetinfo(14:18).group ]= deal('3');
 
 % ------------------------------------------------------------
 %       LIMO TESTING STARTS HERE
 % ------------------------------------------------------------
+tic
 
 %% test std_limo and 1st level GLM
-
 try
     % make categorical design & estimate with OLS
     STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off','defaultdesign','off',...
@@ -126,9 +123,10 @@ try
     if exist([limo_rootfiles filesep 'limo_batch_report'],'dir')
         rmdir([limo_rootfiles filesep 'limo_batch_report'],'s')
     end
+    
     for sub = 1:length(STUDY.subject)
-        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'dir')
-            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'s')
+        if exist(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'dir')
+            rmdir(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'FaceRepetition_GLM_Channels_Time_OLS']),'s')
         end
     end
     
@@ -150,13 +148,14 @@ try
     STUDY = std_makedesign(STUDY, ALLEEG, 2, 'name','Face_time','delfiles','off','defaultdesign','off',...
         'variable1','face_type','values1',{'famous','scrambled','unfamiliar'},'vartype1','categorical',...
         'variable2','time_dist','values2',[],'vartype2','continuous',...
+        'variable3','trial_dist','values3',[],'vartype3','continuous',...
         'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
     [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
     
     % cleanup previous version
     for sub = 1:length(STUDY.subject)
-        if exist(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'dir')
-            rmdir(fullfile(root,[STUDY.subject{1} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'s')
+        if exist(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'dir')
+            rmdir(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'Face_time_GLM_Channels_Time_WLS']),'s')
         end
     end
     
@@ -173,9 +172,34 @@ catch err
     limotest{2} = sprintf('mixed design with WLS estimates + contrast failed \n%s',err.message);
 end
 
+
+try
+    % make categorical+continuous design & estimate with WLS
+    STUDY = std_makedesign(STUDY, ALLEEG, 3, 'name','Constant','delfiles','off','defaultdesign','off',...
+        'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
+    [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
+    
+    % cleanup previous version
+    for sub = 1:length(STUDY.subject)
+        if exist(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'Constant_GLM_Channels_Time_WLS']),'dir')
+            rmdir(fullfile(root,[STUDY.subject{sub} filesep 'eeg' filesep 'Constant_GLM_Channels_Time_WLS']),'s')
+        end
+    end
+    
+    % compute 1st model with WLS
+    [STUDY, ~, Model3_files] = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
+    limotest{3} = 'constant design (no variables) with WLS estimates successful';
+catch err
+    fprintf('%s\n',err.message)
+    limotest{3} = sprintf('constant design (no variables) with WLS estimates failed \n%s',err.message);
+end
+
+
 %% 2nd level analyses
 cd(root); mkdir('2nd_level_tests'); cd('2nd_level_tests');
-channel_vector = limo_best_electrodes(fullfile(limo_rootfiles, 'LIMO_files_Face_time_GLM_Channels_Time_WLS.txt'));
+[channel_vector,~,freqmap] = limo_best_electrodes(...
+    fullfile(limo_rootfiles, 'LIMO_files_Face_detection_FaceRepetition_GLM_Channels_Time_OLS.txt'),...
+    fullfile(fileparts(studyfullname),'limo_gp_level_chanlocs.mat'));
 save('virtual_electrode','channel_vector')
 
 % ---------------------------------------------------------------------
@@ -217,13 +241,30 @@ try
     LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,...
         'LIMOfiles',Model2_files.con,'regressor_file',randi(length(Model2_files.con),length(Model2_files.con),2),...
         'analysis_type','Full scalp analysis', 'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
+
+    limo_contrast('Yr.mat', 'Betas.mat', 'LIMO.mat', 'T', 1, [1 0])
+    limo_contrast('Yr.mat', 'Betas.mat', 'LIMO.mat', 'T', 2, [1 0])
+    
+    % tripple data size for IRLS
+    rmdir('H0','s'); rmdir('tfce','s')
+    LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,...
+        'LIMOfiles',[Model2_files.con ; Model2_files.con ; Model2_files.con],...
+        'regressor_file',randi(length(Model2_files.con)*3,length(Model2_files.con)*3,2),...
+        'analysis_type','Full scalp analysis', 'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
     
     % regression channel 50 file list of con files as input and a file as regressor
     cd(fullfile(root,'2nd_level_tests'));
     mkdir('regression50'); cd('regression50')
     randomreg = randn(length(Model2_files.con),1); save('reg.mat','randomreg');
     LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,'regressor_file',[pwd filesep 'reg.mat'],...
-        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
+        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_Face_detection_Face_time_GLM_Channels_Time_WLS.txt'],...
+        'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
+    
+    rmdir('H0','s'); rmdir('tfce','s')
+    randomreg = randn(length(Model2_files.con)*3,length(Model2_files.con)*3,2); save('reg.mat','randomreg');
+    LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,...
+        'LIMOfiles',[Model2_files.con ; Model2_files.con ; Model2_files.con],...
+        'regressor_file',randi(length(Model2_files.con)*3,length(Model2_files.con)*3,2),...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
     
     % regression virtual channel - list of Betas files, select a parameter, load optimized channel file
@@ -254,14 +295,16 @@ try
     mkdir('paired_t-test'); cd('paired_t-test')
     LIMOPath = limo_random_select('paired t-test',STUDY.limo.chanloc,...
         'LIMOfiles',data,'analysis_type','Full scalp analysis', 'type','Channels','nboot',101,'tfce',1);
+    limo_eeg(5)
     
     % paired t-test channel 50 with file list of con files
     cd(fullfile(root,'2nd_level_tests'));
     mkdir('paired_t-test50'); cd('paired_t-test50')
-    datafiles = {[limo_rootfiles filesep 'con_1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
-        [limo_rootfiles filesep 'con_2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
+    datafiles = {[limo_rootfiles filesep 'con_1_files_Face_detection_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
+        [limo_rootfiles filesep 'con_2_files_Face_detection_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
     LIMOPath = limo_random_select('paired t-test',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
          'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
+    limo_eeg(5)
     
     % paired t-test virtual channel with file list of Betas
     cd(fullfile(root,'2nd_level_tests'));
@@ -290,7 +333,8 @@ try
     mkdir('two-samples_t-test50'); cd('two-samples_t-test50')
     LIMOPath = limo_random_select('two-samples t-test',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
          'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
-    
+    limo_eeg(5)
+
     % two-samples t-test virtual channel with file list of Betas
     cd(fullfile(root,'2nd_level_tests'));
     mkdir('two-samples_t-testOPT'); cd('two-samples_t-testOPT'); clear Bfiles
@@ -361,7 +405,7 @@ try
     for s=1:length(index); data{3,s} = Model1_files.con{index(s)}(1); end
     cd(fullfile(root,'2nd_level_tests'));
     mkdir('ANCOVA'); cd('ANCOVA')
-    LIMOPath = limo_random_select('ANCOVA',STUDY.limo.chanloc,'LIMOfiles',data',... % transpose data = wrong but let limo fix it
+    LIMOPath = limo_random_select('ANCOVA',STUDY.limo.chanloc,'LIMOfiles',data,... % transpose data = wrong but let limo fix it
         'analysis_type','Full scalp analysis', 'type','Channels',...
         'regressor_file', randn(18,2), 'nboot',101,'tfce',1,'skip design check','yes');
     limo_contrast([pwd filesep 'Yr.mat'], [pwd filesep 'Betas.mat'], ...
@@ -372,13 +416,13 @@ try
     % N-Ways ANCOVA channel 50 with file list of con files
     cd(fullfile(root,'2nd_level_tests'));
     mkdir('ANCOVA50'); cd('ANCOVA50')
-    LIMOPath = limo_random_select('ANCOVA',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
+    LIMOPath = limo_random_select('ANCOVA',STUDY.limo.chanloc,'LIMOfiles',datafiles(1:2),...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels',...
-        'regressor_file', randn(18,2),'nboot',101,'tfce',1,'skip design check','yes');
+        'regressor_file', randn(13,2),'nboot',101,'tfce',1,'skip design check','yes');
     limo_contrast([pwd filesep 'Yr.mat'], [pwd filesep 'Betas.mat'], ...
-        [pwd filesep 'LIMO.mat'],'T',1,[0 0 0 1 -1 0]); % contrast
+        [pwd filesep 'LIMO.mat'],'T',1,[0 0 1 -1 0]); % contrast
     limo_contrast([pwd filesep 'Yr.mat'], [pwd filesep 'H0' filesep 'H0_Betas.mat'], ...
-        [pwd filesep 'LIMO.mat'],'T',2,[0 0 0 1 -1 0]); % boostrap / tfce
+        [pwd filesep 'LIMO.mat'],'T',2,[0 0 1 -1 0]); % boostrap / tfce
     
     % N-Ways ANCOVA  virtual channel with file list of Betas and input parameters
     cd(fullfile(root,'2nd_level_tests'));
@@ -389,7 +433,7 @@ try
     limotest{8} = 'ANCOVA + contrast successful';
 catch err
     fprintf('%s\n',err.message)
-    limotest{8} = sprintf('1-ANCOVA + contrast failed \n%s',err.message);
+    limotest{8} = sprintf('1-way ANCOVA + contrast failed \n%s',err.message);
 end
 
 % ---------------------------------------------------------------------
@@ -455,8 +499,8 @@ end
 cd(root);toc
 if all(contains(limotest,'successful'))
     disp('deleting all created files - test successful')
-    rmdir('2nd_level_tests','s');
-    rmdir(limo_rootfiles,'s')
+    try mdir('2nd_level_tests','s'); end
+    try rmdir(limo_rootfiles,'s'); end
 else
     warning('test failure - files were not deleted from drive')
 end
