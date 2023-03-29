@@ -90,9 +90,11 @@ end
 clear cholesterol Data1 Data2 diff se CI p df
 
 % robust regression -- handled for now via limo_glm using IRLS -- there is
-% a limo_lowess.m hidden function ; we should really get this done
 % robust N-ways ANOVA / N-ways ANCOVA - handled for via limo_glm using IRLS
+
+% 1st test limo_irls ie the data fit
 test = limo_test_irls;
+sample_sizes = 10:10:100;
 index = [min(find(test(:,1) <= 0.0001))+1 ...
     min(find(test(:,2) <= 0.0001))+1 ...
     min(find(test(:,3) <= 0.0001))+1];
@@ -100,10 +102,34 @@ precision = max(test(index));
 match = min(sample_sizes(sum(test <= precision,2) == 3));
 fprintf('model fit limo_irls = Matlab robustfit from N=%g\n',match)
 
+% 2nd test limo_glm for inference
+opt.RobustWgtFun = 'bisquare';
+opt.Tune         = 4.685;
+
+Y1 = randn(100,1);
+X1 = [-5.*Y1+rand(100,1) -1.*Y1+rand(100,1) 2.*Y1+rand(100,1) ...
+    4.*Y1+rand(100,1) 6.*Y1+rand(100,1) ones(100,1)];
+limo_mdl = limo_glm(Y1, X1, 0, 0, 1, 'IRLS', 'Time', 0, 1);
+mat_mdl  = fitlm(X1, Y1, 'y ~ x1+x2+x3+x4+x5+x6-1', 'RobustOpts', opt);
+fprintf('max difference in estimates %g \n',max([limo_mdl.betas - mat_mdl.Coefficients.Estimate]));
+
+limo_model = X1*limo_mdl.betas;
+mat_model  = X1*mat_mdl.Coefficients.Estimate
+limo_rmse  = sqrt(mean((Y1-limo_model).^2));
+mat_rmse   = sqrt(mean((Y1-mat_model).^2));
+% mat_mdl.RMSE is not equal to sqrt(mean(mat_mdl.Residuals.Raw.^2)) because
+% fitlm divides by the df instead of N ie sqrt(sum((mat_mdl.Residuals.Raw/mat_mdl.DFE).^2))
 
 
-% robust repeated measure ANOVA - limo_robust_rep_anova.m still working on
-% it 
+%% identical input + bias
+model1 = limo_glm(Y1, X1, 0, 0, 1, 'IRLS', 'Time', 0, 1);
+mdl1 = fitlm(X1, Y1, 'y ~ 1 + x1', 'RobustOpts', 'on');
+
+%% different input + bias
+% model2 = limo_glm(Y2, X2, 0, 0, 1, 'IRLS', 'Time', 0, 1); % for LIMO
+% mdl2 = fitlm(X2, Y2, 'y ~ 1 + x1', 'RobustOpts', 'on'); % for Matlab fitlm
+
+% robust repeated measure ANOVA to do - limo_robust_rep_anova.m still working on it 
 
 if ~exist('whicherror','var')
     disp('-------------------------------')

@@ -21,8 +21,8 @@ end
 bootnull    = 1500; % if null is 'on' use 1000 boostraps
 
 %% regression
-MRMSE   = NaN(length(sample_sizes),2);
-MCerror = NaN(length(sample_sizes),2);
+MRMSE            = NaN(length(sample_sizes),2);
+MCerror          = NaN(length(sample_sizes),2);
 
 parfor N = 1:length(sample_sizes)
     RMSE  = NaN(2,NMC);
@@ -34,8 +34,9 @@ parfor N = 1:length(sample_sizes)
         
         % if we use limo_glm with IRLS
         % ----------------------------
-        [b,w] = limo_IRLS(X,Y);
+        [b,w]      = limo_IRLS(X,Y);
         RMSE(1,MC) = sqrt(mean((Y-X*b).^2));
+        RMSE(2,MC) = sqrt(mean((Y-X*b).^2));
         if strcmpi(null,'on')
             Yhat        = X*b;
             Res         = Y-Yhat;
@@ -62,7 +63,7 @@ parfor N = 1:length(sample_sizes)
         
         % compare to robustfit
         % --------------------
-        [~,stats] = robustfit(X(:,1) ,Y,'bisquare',4.685);
+        [~,stats]  = robustfit(X(:,1) ,Y,'bisquare',4.685);
         RMSE(2,MC) = sqrt(mean(stats.resid.^2));
     end
     MRMSE(N,:)   = mean(RMSE,2);

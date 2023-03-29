@@ -5,7 +5,7 @@ function [avg_err,ci_err,max_err,maxci_err,maxc_err,maxcic_err] = limo_test_glmb
 % is a consistency in space/frequency/time in the effect observed,
 % typically due to non stationarity
 %
-% FORMAT [avg_err,ci_err] = limo_test_glmboot(H0,'step_size',100,'alphavalue',0.05,'figure','on')
+% FORMAT [avg_err,ci_err] = limo_test_glmboot(chanlocs,H0,'step_size',100,'alphavalue',0.05,'figure','on')
 %
 % INPUTS H0 is a cell array of H0 folders (1 or many)
 %        'alphavalue' is the nominal level to test
