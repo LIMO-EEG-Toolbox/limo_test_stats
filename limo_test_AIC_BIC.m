@@ -11,6 +11,32 @@ directory = pwd;
 
 % we make data as for EEG (same data used in limo_test_glm.m)
 % ----------------------------------------------------------
+
+% full rank
+% ---------
+
+Y        = NaN(1,2,15);
+Y(1,1,:) = [5,6,8,7,9,3,2,1,5,6,4,5,8,9,6];
+Y(1,2,:) = [5,6,8,7,9,3,2,1,5,6,4,5,8,9,6];
+Cat      = [];
+Cont     = [0.1978 1.3107 0.5688 -0.5441 -1.286 -0.915 -0.1731 0.1978 0.5688 0.9398 1.6817 -0.915 0.9398 -1.286 -1.286 ; ...
+    -1.0185 -0.3542 0.31 -0.3542 -1.0185 0.9742 -0.3542 0.31 2.3026 1.6384 -0.3542 -1.0185 -1.0185  -0.3542 0.31]';
+[X,nb_conditions,nb_interactions,nb_continuous] = ...
+    limo_design_matrix(Y,Cat,Cont,directory,1,0,1);
+title('GLM with 2 continuous variables (multiple regression)')
+model1 = limo_glm(squeeze(Y)',X,nb_conditions,nb_interactions,nb_continuous,'OLS','Time',[],[]);
+[aic, bic] = limo_AIC_BIC('Yr',squeeze(Y(1,1,:)),'Betas',model1.betas,'X',X);
+model2     = fitlm(X,squeeze(Y(1,1,:)));
+if model2.ModelCriterion.BIC == bic(1) && model2.ModelCriterion.AIC == aic(1)
+    disp('-------')
+    disp('success')
+    disp('-------')
+else
+    error('LIMO AIC and/or BIC diverge from fitlm')
+end
+
+% rank deficient
+% --------------
 Y        = NaN(1,1,15);
 Y(1,1,:) = [5,6,8,7,9,3,2,1,5,6,4,5,8,9,6];
 Cat      = [1 1 1 1 1 2 2 2 2 2 2 2 3 3 3 ; 1 1 2 2 3 1 1 2 2 3 3 3 1 2 3];
